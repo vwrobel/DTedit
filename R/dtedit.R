@@ -132,6 +132,10 @@ dtedit <- function(input, output, session, thedataframe,
 		   label.edit = 'Edit',
 		   label.add = 'New',
 		   label.copy = 'Copy',
+		   icon.delete = icon("trash"),
+		   icon.edit = icon("edit"),
+		   icon.add = icon("plus"),
+		   icon.copy = icon("copy"),
 		   show.delete = TRUE,
 		   show.update = TRUE,
 		   show.insert = TRUE,
@@ -577,10 +581,10 @@ dtedit <- function(input, output, session, thedataframe,
 	output[[name]] <- shiny::renderUI({
 		ns <- session$ns # namespace for module
 		shiny::div(
-			if(show.insert) { shiny::actionButton(ns(paste0(name, '_add')), label.add) },
-			if(show.update) { shiny::actionButton(ns(paste0(name, '_edit')), label.edit) },
-			if(show.delete) { shiny::actionButton(ns(paste0(name, '_remove')), label.delete) },
-			if(show.copy) { shiny::actionButton(ns(paste0(name, '_copy')), label.copy) },
+			if(show.insert) { shiny::actionButton(ns(paste0(name, '_add')), label.add, icon = icon.add) },
+			if(show.update) { shiny::actionButton(ns(paste0(name, '_edit')), label.edit, icon = icon.edit) },
+			if(show.delete) { shiny::actionButton(ns(paste0(name, '_remove')), label.delete, icon = icon.delete) },
+			if(show.copy) { shiny::actionButton(ns(paste0(name, '_copy')), label.copy, icon = icon.copy) },
 			shiny::br(), shiny::br(), DT::dataTableOutput(ns(DataTableName))
 		)
 	})
