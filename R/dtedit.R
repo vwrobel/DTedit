@@ -593,7 +593,7 @@ dtedit <- function(input, output, session, thedataframe,
 
 	return(list(thedata = reactive({result$thedata}),
 		    edit.count = reactive({result$edit.count}),
-		    dt.name = DataTableName))
+		    dt.name = ns(DataTableName)))
 	# edit.count only incremented by changes made through dtedit GUI
 	# does not include edits created through response to changes in reactiveval 'thedataframe'
 	# this might help determine the source of changes in result$thedata
