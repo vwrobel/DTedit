@@ -592,9 +592,13 @@ dtedit <- function(input, output, session, thedataframe,
 	outputOptions(output, name, suspendWhenHidden = FALSE)
 	# if suspendWhenHidden is true, then the table is not rendered if the tab is hidden
 
+	selected_rows <- reactive({
+		input[[paste0(DataTableName, "_rows_selected")]]
+	})		
+			
 	return(list(thedata = reactive({result$thedata}),
 		    edit.count = reactive({result$edit.count}),
-		    dt.name = ns(DataTableName)))
+		    selected_rows = selected_rows))
 	# edit.count only incremented by changes made through dtedit GUI
 	# does not include edits created through response to changes in reactiveval 'thedataframe'
 	# this might help determine the source of changes in result$thedata
