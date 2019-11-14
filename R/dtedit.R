@@ -144,7 +144,8 @@ dtedit <- function(input, output, session, thedataframe,
 		   callback.update = function(data, olddata, row) { },
 		   callback.insert = function(data, row) { },
 		   click.time.threshold = 2, # in seconds
-		   datatable.options = list(pageLength=defaultPageLength)
+		   datatable.options = list(pageLength=defaultPageLength),
+		   datatable.name = "editdt"
 ) {
 	thedata <- if(is.reactive(isolate(thedataframe)))
 	{isolate(thedataframe())} else {thedataframe}
@@ -160,8 +161,7 @@ dtedit <- function(input, output, session, thedataframe,
 		stop('Not all edit.cols are in the data.')
 	}
 
-	name <- "editdt"
-	DataTableName <- paste0(name, 'dt')
+	DataTableName <- paste0(datatable.name, 'dt')
 
 	result <- shiny::reactiveValues()
 	result$thedata <- thedata
@@ -592,7 +592,8 @@ dtedit <- function(input, output, session, thedataframe,
 	# if suspendWhenHidden is true, then the table is not rendered if the tab is hidden
 
 	return(list(thedata = reactive({result$thedata}),
-		    edit.count = reactive({result$edit.count})))
+		    edit.count = reactive({result$edit.count}),
+		    dt.name = DataTableName))
 	# edit.count only incremented by changes made through dtedit GUI
 	# does not include edits created through response to changes in reactiveval 'thedataframe'
 	# this might help determine the source of changes in result$thedata
