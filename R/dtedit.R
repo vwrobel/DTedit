@@ -160,8 +160,9 @@ dtedit <- function(input, output, session, thedataframe,
 	} else if(!all(edit.cols %in% names(thedata))) {
 		stop('Not all edit.cols are in the data.')
 	}
-
-	DataTableName <- paste0(datatable.name, 'dt')
+		
+	name <- datatable.name
+	DataTableName <- paste0(name, 'dt')
 
 	result <- shiny::reactiveValues()
 	result$thedata <- thedata
