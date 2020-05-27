@@ -4,24 +4,57 @@
 \alias{dtedit}
 \title{Create a DataTable with Add, Edit and Delete buttons.}
 \usage{
-dtedit(input, output, session, thedataframe, view.cols = names(isolate(if
-  (is.reactive(thedataframe)) {     thedataframe() } else {    
-  thedataframe })), edit.cols = names(isolate(if
-  (is.reactive(thedataframe)) {     thedataframe() } else {    
-  thedataframe })), edit.label.cols = edit.cols, input.types,
-  input.choices = NULL, input.choices.reactive = NULL,
-  selectize = TRUE, modal.size = "m", text.width = "100\%",
-  textarea.width = "570px", textarea.height = "200px",
-  date.width = "100px", numeric.width = "100px",
-  select.width = "100\%", defaultPageLength = 10,
-  title.delete = "Delete", title.edit = "Edit", title.add = "New",
-  label.delete = "Delete", label.edit = "Edit", label.add = "New",
-  label.copy = "Copy", show.delete = TRUE, show.update = TRUE,
-  show.insert = TRUE, show.copy = TRUE,
+dtedit(
+  input,
+  output,
+  session,
+  thedataframe,
+  view.cols = names(isolate(if (is.reactive(thedataframe)) {     thedataframe() } else
+    {     thedataframe })),
+  edit.cols = names(isolate(if (is.reactive(thedataframe)) {     thedataframe() } else
+    {     thedataframe })),
+  edit.label.cols = edit.cols,
+  input.types,
+  input.choices = NULL,
+  input.choices.reactive = NULL,
+  selectize = TRUE,
+  modal.size = "m",
+  text.width = "100\%",
+  textarea.width = "570px",
+  textarea.height = "200px",
+  date.width = "100px",
+  numeric.width = "100px",
+  select.width = "100\%",
+  defaultPageLength = 10,
+  title.delete = "Delete",
+  title.edit = "Edit",
+  title.add = "New",
+  title.download = "Download",
+  title.upload = "Upload",
+  label.delete = "",
+  label.edit = "",
+  label.add = "",
+  label.copy = "",
+  label.download = "",
+  label.upload = "",
+  icon.delete = icon("trash"),
+  icon.edit = icon("edit"),
+  icon.add = icon("plus"),
+  icon.copy = icon("copy"),
+  icon.upload = icon("upload"),
+  show.delete = TRUE,
+  show.update = TRUE,
+  show.insert = TRUE,
+  show.copy = TRUE,
+  show.download = FALSE,
+  show.upload = FALSE,
   callback.delete = function(data, row) { },
   callback.update = function(data, olddata, row) { },
-  callback.insert = function(data, row) { }, click.time.threshold = 2,
-  datatable.options = list(pageLength = defaultPageLength))
+  callback.insert = function(data, row) { },
+  click.time.threshold = 2,
+  datatable.options = list(pageLength = defaultPageLength),
+  datatable.name = "editdt"
+)
 }
 \arguments{
 \item{input}{Shiny input object passed from the server.}
@@ -190,6 +223,7 @@ shinyApp(ui = ui, server = server)
  and interactions between the data of multiple datatables.
  }
 
-Other Datatable Edit functions: \code{\link{dteditUI}}
+Other Datatable Edit functions: 
+\code{\link{dteditUI}()}
 }
 \concept{Datatable Edit functions}

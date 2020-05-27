@@ -137,7 +137,9 @@ server <- function(input, output) {
 		   view.cols = names(books)[c(5,1,3)],
 		   callback.update = books.update.callback,
 		   callback.insert = books.insert.callback,
-		   callback.delete = books.delete.callback)
+		   callback.delete = books.delete.callback,
+		   show.upload = T,
+		   show.download = T)
 
 	names.Like <- reactiveVal()
 	names.Like(data.frame(Likes = c("Apple", "Pear"), stringsAsFactors = FALSE))

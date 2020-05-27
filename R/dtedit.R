@@ -128,6 +128,8 @@ dtedit <- function(input, output, session, thedataframe,
 		   title.delete = 'Delete',
 		   title.edit = 'Edit',
 		   title.add = 'New',
+		   title.download = 'Download',
+		   title.upload = 'Upload',
 		   label.delete = '',
 		   label.edit = '',
 		   label.add = '',
@@ -138,7 +140,6 @@ dtedit <- function(input, output, session, thedataframe,
 		   icon.edit = icon("edit"),
 		   icon.add = icon("plus"),
 		   icon.copy = icon("copy"),
-		   icon.download = icon("download"),
 		   icon.upload = icon("upload"),
 		   show.delete = TRUE,
 		   show.update = TRUE,
@@ -174,7 +175,7 @@ dtedit <- function(input, output, session, thedataframe,
 	result$thedata <- thedata
 	result$view.cols <- view.cols
 	result$edit.cols <- edit.cols
-	result$edit.count <- 0 # number of edits (Add/Delete/Edit/Copy) through dtedit
+	result$edit.count <- 0 # number of edits (Add/Delete/Edit/Copy/Upload) through dtedit
 
 	dt.proxy <- DT::dataTableProxy(DataTableName)
 
@@ -571,9 +572,77 @@ dtedit <- function(input, output, session, thedataframe,
 
 	##### Upload functions #######################################################
 	
+	observeEvent(input[[paste0(name, '_upload')]], {
+	  shiny::showModal(uploadModal())
+	})
+	
+	observeEvent(input[[paste0(name, '_insert')]], {
+	  #browser()
+    tryCatch({
+      filecontent <- read_excel(input$file_input$datapath)
+      if ((length(intersect(colnames(filecontent), edit.cols)) != length(edit.cols)) |
+          length(colnames(filecontent)) != length(edit.cols))
+        stop(sprintf("Expected columns are: %s", paste(edit.cols, collapse = ", ")))
+      if (input$replace_toggle) {
+        olddata <- result$thedata
+        if (!is.empty(olddata)) {
+          for (row in 1:nrow(olddata)){
+            callback.data <- callback.delete(data = result$thedata, row = row)
+            result$thedata <- callback.data
+          }
+        }
+      }
+      for (row in 1:nrow(filecontent)) {
+          olddata <- result$thedata
+          newdata <- filecontent
+          callback.data <- callback.insert(data = newdata,
+                                           row = row)
+          if(!is.null(callback.data) & is.data.frame(callback.data)) {
+            result$thedata <- callback.data
+          } else {
+            result$thedata <- newdata
+          }
+          updateData(dt.proxy,
+                     result$thedata[,view.cols, drop=FALSE],
+                     # was "result$thedata[,view.cols]",
+                     # but that returns vector (not dataframe) if
+                     # view.cols is only a single column
+                     rownames = FALSE)
+          result$edit.count <- result$edit.count + 1
+      }
+      shiny::removeModal()
+      return(TRUE)
+    }, error = function(e) {
+      output[[paste0(name, '_message')]] <<- shiny::renderText(geterrmessage())
+      return(FALSE)
+    })
+  })
+
+	
+	uploadModal <- function() {
+	  ns <- session$ns # necessary to use namespace for id elements in modaldialogs within modules
+	  output[[paste0(name, '_message')]] <- renderText('')
+	  shiny::modalDialog(title = title.upload,
+	                     fileInput(ns("file_input"), "Select a xlsx file",
+	                               buttonLabel = "Browse...",
+	                               placeholder = "No file selected"),
+	                     materialSwitch(inputId = ns("replace_toggle"), label = "Replace all data"),
+	                     footer = column(shiny::modalButton('Cancel'),
+	                                     shiny::actionButton(ns(paste0(name, '_insert')), 'Insert'),
+	                                     width=12),
+	                     size = modal.size
+	  )
+	}
 			
-			
-			
+	##### Download functions #######################################################		
+	output[[paste0(name, '_download')]] <- downloadHandler(
+	  filename = function() { sprintf("%s.xlsx", datatable.name) },
+	  content = function(file) {
+	    write.xlsx(result$thedata, file)
+	  }
+	)
+	
+	
 	##### React to changes in 'thedataframe' if that variable is a reactive ######
 
 	if (is.reactive(thedataframe)) {
@@ -597,8 +666,8 @@ dtedit <- function(input, output, session, thedataframe,
 			if(show.update) { shiny::actionButton(ns(paste0(name, '_edit')), label.edit, icon = icon.edit) },
 			if(show.delete) { shiny::actionButton(ns(paste0(name, '_remove')), label.delete, icon = icon.delete) },
 			if(show.copy) { shiny::actionButton(ns(paste0(name, '_copy')), label.copy, icon = icon.copy) },
-			if(show.download) { shiny::actionButton(ns(paste0(name, '_download')), label.download, icon = icon.download) },
 			if(show.upload) { shiny::actionButton(ns(paste0(name, '_upload')), label.upload, icon = icon.upload) },
+			if(show.download) { shiny::downloadButton(ns(paste0(name, '_download')), label.download) },
 			shiny::br(), shiny::br(), DT::dataTableOutput(ns(DataTableName))
 		)
 	})
