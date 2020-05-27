@@ -577,7 +577,7 @@ dtedit <- function(input, output, session, thedataframe,
 	  shiny::showModal(uploadModal())
 	})
 	
-	observeEvent(input[[paste0(name, '_insert')]], {
+	observeEvent(input[[paste0(name, '_upload_file')]], {
 	  #browser()
     tryCatch({
       filecontent <- read_excel(input$file_input$datapath)
@@ -594,23 +594,22 @@ dtedit <- function(input, output, session, thedataframe,
         }
       }
       for (row in 1:nrow(filecontent)) {
-          olddata <- result$thedata
-          newdata <- filecontent
-          callback.data <- callback.insert(data = newdata,
-                                           row = row)
-          print("here")
-          if (!is.null(callback.data) & is.data.frame(callback.data)) {
-            result$thedata <- callback.data
-          } else {
-            result$thedata <- newdata
-          }
-          updateData(dt.proxy,
-                     result$thedata[,view.cols, drop=FALSE],
-                     # was "result$thedata[,view.cols]",
-                     # but that returns vector (not dataframe) if
-                     # view.cols is only a single column
-                     rownames = FALSE)
-          result$edit.count <- result$edit.count + 1
+        olddata <- result$thedata
+        newdata <- filecontent
+        callback.data <- callback.insert(data = newdata,
+                                         row = row)
+        if (!is.null(callback.data) & is.data.frame(callback.data)) {
+          result$thedata <- callback.data
+        } else {
+          result$thedata <- newdata
+        }
+        updateData(dt.proxy,
+                   result$thedata[,view.cols, drop=FALSE],
+                   # was "result$thedata[,view.cols]",
+                   # but that returns vector (not dataframe) if
+                   # view.cols is only a single column
+                   rownames = FALSE)
+        result$edit.count <- result$edit.count + 1
       }
       shiny::removeModal()
       return(TRUE)
@@ -630,7 +629,7 @@ dtedit <- function(input, output, session, thedataframe,
 	                               placeholder = "No file selected"),
 	                     materialSwitch(inputId = ns("replace_toggle"), label = "Replace all data"),
 	                     footer = column(shiny::modalButton('Cancel'),
-	                                     shiny::actionButton(ns(paste0(name, '_insert')), 'Insert'),
+	                                     shiny::actionButton(ns(paste0(name, '_upload_file')), 'Insert'),
 	                                     width=12),
 	                     size = modal.size
 	  )

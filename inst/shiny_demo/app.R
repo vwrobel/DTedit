@@ -27,8 +27,10 @@ getBooks <- function() {
 
 ##### Callback functions.
 books.insert.callback <- function(data, row) {
+  newid <- max(getBooks()$id) + 1
+  if (is.infinite(newid)) {newid <- 1} 
 	query <- paste0("INSERT INTO books (id, Authors, Date, Title, Publisher) VALUES (",
-			"", max(getBooks()$id) + 1, ", ",
+			"", newid, ", ",
 			"'", paste0(data[row,]$Authors[[1]], collapse = ';'), "', ",
 			"'", as.character(data[row,]$Date), "', ",
 			"'", data[row,]$Title, "', ",

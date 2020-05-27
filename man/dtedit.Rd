@@ -53,7 +53,8 @@ dtedit(
   callback.insert = function(data, row) { },
   click.time.threshold = 2,
   datatable.options = list(pageLength = defaultPageLength),
-  datatable.name = "editdt"
+  datatable.name = "editdt",
+  download.filename = "data"
 )
 }
 \arguments{
