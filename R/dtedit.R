@@ -583,12 +583,27 @@ dtedit <- function(input, output, session, thedataframe,
 	  shiny::showModal(uploadModal())
 	})
 	
+	upload.click <- NA
+	
 	observeEvent(input[[paste0(name, '_do_upload')]], {
+	  
+	  if(!is.na(upload.click)) {
+	    lastclick <- as.numeric(Sys.time() - upload.click, units = 'secs')
+	    if(lastclick < click.time.threshold) {
+	      warning(paste0('Double click detected. Ignoring upload call for ', name, '.'))
+	      return()
+	    }
+	  }
+	  upload.click <- Sys.time()
+	  
     tryCatch({
       filecontent <- read_excel(input$file_input$datapath)
       if ((length(intersect(colnames(filecontent), edit.cols)) != length(edit.cols)) |
-          length(colnames(filecontent)) != length(edit.cols))
-        stop(sprintf("Expected columns are: %s", paste(edit.cols, collapse = ", ")))
+          length(colnames(filecontent)) != length(edit.cols)) {
+        error_msg <- sprintf("Expected columns are: %s", paste(edit.cols, collapse = ", "))
+        shinyalert("Error", error_msg, type = "error")
+        stop()
+      }
       result$thedata <- callback.upload(data = filecontent, olddata = result$thedata)
       updateData(dt.proxy,
                  result$thedata[,view.cols, drop=FALSE],
