@@ -130,26 +130,32 @@ dtedit <- function(input, output, session, thedataframe,
 		   title.add = 'New',
 		   title.download = 'Download',
 		   title.upload = 'Upload',
+		   title.reset = 'Reset',
 		   label.delete = '',
 		   label.edit = '',
 		   label.add = '',
 		   label.copy = '',
 		   label.download = '',
 		   label.upload = '',
+		   label.reset = '',
 		   icon.delete = icon("trash"),
 		   icon.edit = icon("edit"),
 		   icon.add = icon("plus"),
 		   icon.copy = icon("copy"),
 		   icon.upload = icon("upload"),
+		   icon.reset = icon("undo"),
 		   show.delete = TRUE,
 		   show.update = TRUE,
 		   show.insert = TRUE,
 		   show.copy = TRUE,
 		   show.download = FALSE,
 		   show.upload = FALSE,
+		   show.reset = FALSE,
 		   callback.delete = function(data, row) { },
 		   callback.update = function(data, olddata, row) { },
 		   callback.insert = function(data, row) { },
+		   callback.upload = function(data, olddata) { },
+		   callback.reset = function() { },
 		   click.time.threshold = 2, # in seconds
 		   datatable.options = list(pageLength=defaultPageLength),
 		   datatable.name = "editdt",
@@ -577,40 +583,17 @@ dtedit <- function(input, output, session, thedataframe,
 	  shiny::showModal(uploadModal())
 	})
 	
-	observeEvent(input[[paste0(name, '_upload_file')]], {
-	  #browser()
+	observeEvent(input[[paste0(name, '_do_upload')]], {
     tryCatch({
       filecontent <- read_excel(input$file_input$datapath)
       if ((length(intersect(colnames(filecontent), edit.cols)) != length(edit.cols)) |
           length(colnames(filecontent)) != length(edit.cols))
         stop(sprintf("Expected columns are: %s", paste(edit.cols, collapse = ", ")))
-      if (input$replace_toggle) {
-        olddata <- result$thedata
-        if (!is.empty(olddata)) {
-          for (row in 1:nrow(olddata)) {
-            callback.data <- callback.delete(data = result$thedata, row = row)
-            result$thedata <- callback.data
-          }
-        }
-      }
-      for (row in 1:nrow(filecontent)) {
-        olddata <- result$thedata
-        newdata <- filecontent
-        callback.data <- callback.insert(data = newdata,
-                                         row = row)
-        if (!is.null(callback.data) & is.data.frame(callback.data)) {
-          result$thedata <- callback.data
-        } else {
-          result$thedata <- newdata
-        }
-        updateData(dt.proxy,
-                   result$thedata[,view.cols, drop=FALSE],
-                   # was "result$thedata[,view.cols]",
-                   # but that returns vector (not dataframe) if
-                   # view.cols is only a single column
-                   rownames = FALSE)
-        result$edit.count <- result$edit.count + 1
-      }
+      result$thedata <- callback.upload(data = filecontent, olddata = result$thedata)
+      updateData(dt.proxy,
+                 result$thedata[,view.cols, drop=FALSE],
+                 rownames = FALSE)
+      result$edit.count <- result$edit.count + 1
       shiny::removeModal()
       return(TRUE)
     }, error = function(e) {
@@ -627,14 +610,52 @@ dtedit <- function(input, output, session, thedataframe,
 	                     fileInput(ns("file_input"), "Select a xlsx file",
 	                               buttonLabel = "Browse...",
 	                               placeholder = "No file selected"),
-	                     materialSwitch(inputId = ns("replace_toggle"), label = "Replace all data"),
 	                     footer = column(shiny::modalButton('Cancel'),
-	                                     shiny::actionButton(ns(paste0(name, '_upload_file')), 'Insert'),
+	                                     shiny::actionButton(ns(paste0(name, '_do_upload')), 'Confirm'),
 	                                     width=12),
 	                     size = modal.size
 	  )
 	}
 			
+	
+	##### Reset functions #######################################################
+	
+	observeEvent(input[[paste0(name, '_reset')]], {
+	  shiny::showModal(resetModal())
+	})
+	
+	observeEvent(input[[paste0(name, '_do_reset')]], {
+	  tryCatch({
+	    result$thedata <- callback.reset()
+	    updateData(dt.proxy,
+	               result$thedata[,view.cols, drop=FALSE],
+	               # was "result$thedata[,view.cols]",
+	               # but that returns vector (not dataframe) if
+	               # view.cols is only a single column
+	               rownames = FALSE)
+	    result$edit.count <- result$edit.count + 1
+	    shiny::removeModal()
+	    return(TRUE)
+	  }, error = function(e) {
+	    output[[paste0(name, '_message')]] <<- shiny::renderText(geterrmessage())
+	    return(FALSE)
+	  })
+	})
+	
+	
+	resetModal <- function() {
+	  ns <- session$ns # necessary to use namespace for id elements in modaldialogs within modules
+	  output[[paste0(name, '_message')]] <- renderText('')
+	  shiny::modalDialog(title = title.reset,
+                      "The data will be permanently deleted.",
+	                     footer = column(shiny::modalButton('Cancel'),
+	                                     shiny::actionButton(ns(paste0(name, '_do_reset')), 'Confirm'),
+	                                     width=12),
+	                     size = modal.size
+	  )
+	}
+	
+	
 	##### Download functions #######################################################		
 	output[[paste0(name, '_download')]] <- downloadHandler(
 	  filename = function() { sprintf("%s.xlsx", download.filename) },
@@ -669,6 +690,7 @@ dtedit <- function(input, output, session, thedataframe,
 			if(show.copy) { shiny::actionButton(ns(paste0(name, '_copy')), label.copy, icon = icon.copy) },
 			if(show.upload) { shiny::actionButton(ns(paste0(name, '_upload')), label.upload, icon = icon.upload) },
 			if(show.download) { shiny::downloadButton(ns(paste0(name, '_download')), label.download) },
+			if(show.reset) { shiny::actionButton(ns(paste0(name, '_reset')), label.reset, icon = icon.reset) },
 			shiny::br(), shiny::br(), DT::dataTableOutput(ns(DataTableName))
 		)
 	})

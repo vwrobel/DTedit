@@ -59,6 +59,32 @@ books.delete.callback <- function(data, row) {
 	return(getBooks())
 }
 
+books.upload.callback <- function(data, olddata) {
+  for (row in 1:nrow(data)) {
+    newid <- max(getBooks()$id) + 1
+    if (is.infinite(newid)) {newid <- 1} 
+    query <- paste0("INSERT INTO books (id, Authors, Date, Title, Publisher) VALUES (",
+                    "", newid, ", ",
+                    "'", paste0(data[row,]$Authors[[1]], collapse = ';'), "', ",
+                    "'", as.character(data[row,]$Date), "', ",
+                    "'", data[row,]$Title, "', ",
+                    "'", as.character(data[row,]$Publisher), "' ",
+                    ")")
+    print(query) # For debugging
+    dbSendQuery(conn, query)
+  }
+  return(getBooks())
+}
+
+books.reset.callback <- function() {
+  books_cols <- c("id", "Authors", "Date", "Title", "Publisher")
+  empty_df <- data.frame(matrix(ncol = length(books_cols), nrow = 0))
+  names(empty_df) <- books_cols
+  return(empty_df)
+}
+
+
+
 names.Type.update.callback <- function(data, olddata, row) {
 	# update a user-type
 	# do not allow an updated user-type which is the same as another
@@ -140,8 +166,11 @@ server <- function(input, output) {
 		   callback.update = books.update.callback,
 		   callback.insert = books.insert.callback,
 		   callback.delete = books.delete.callback,
+		   callback.upload = books.upload.callback,
+		   callback.reset = books.reset.callback,
 		   show.upload = T,
-		   show.download = T)
+		   show.download = T,
+		   show.reset = T)
 
 	names.Like <- reactiveVal()
 	names.Like(data.frame(Likes = c("Apple", "Pear"), stringsAsFactors = FALSE))
