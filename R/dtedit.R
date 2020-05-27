@@ -152,7 +152,8 @@ dtedit <- function(input, output, session, thedataframe,
 		   callback.insert = function(data, row) { },
 		   click.time.threshold = 2, # in seconds
 		   datatable.options = list(pageLength=defaultPageLength),
-		   datatable.name = "editdt"
+		   datatable.name = "editdt",
+		   download.filename = "data"
 ) {
 	thedata <- if(is.reactive(isolate(thedataframe)))
 	{isolate(thedataframe())} else {thedataframe}
@@ -586,7 +587,7 @@ dtedit <- function(input, output, session, thedataframe,
       if (input$replace_toggle) {
         olddata <- result$thedata
         if (!is.empty(olddata)) {
-          for (row in 1:nrow(olddata)){
+          for (row in 1:nrow(olddata)) {
             callback.data <- callback.delete(data = result$thedata, row = row)
             result$thedata <- callback.data
           }
@@ -597,7 +598,8 @@ dtedit <- function(input, output, session, thedataframe,
           newdata <- filecontent
           callback.data <- callback.insert(data = newdata,
                                            row = row)
-          if(!is.null(callback.data) & is.data.frame(callback.data)) {
+          print("here")
+          if (!is.null(callback.data) & is.data.frame(callback.data)) {
             result$thedata <- callback.data
           } else {
             result$thedata <- newdata
@@ -636,7 +638,7 @@ dtedit <- function(input, output, session, thedataframe,
 			
 	##### Download functions #######################################################		
 	output[[paste0(name, '_download')]] <- downloadHandler(
-	  filename = function() { sprintf("%s.xlsx", datatable.name) },
+	  filename = function() { sprintf("%s.xlsx", download.filename) },
 	  content = function(file) {
 	    write.xlsx(result$thedata, file)
 	  }
