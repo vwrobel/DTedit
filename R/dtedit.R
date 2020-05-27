@@ -132,14 +132,20 @@ dtedit <- function(input, output, session, thedataframe,
 		   label.edit = '',
 		   label.add = '',
 		   label.copy = '',
+		   label.download = '',
+		   label.upload = '',
 		   icon.delete = icon("trash"),
 		   icon.edit = icon("edit"),
 		   icon.add = icon("plus"),
 		   icon.copy = icon("copy"),
+		   icon.download = icon("download"),
+		   icon.upload = icon("upload"),
 		   show.delete = TRUE,
 		   show.update = TRUE,
 		   show.insert = TRUE,
 		   show.copy = TRUE,
+		   show.download = FALSE,
+		   show.upload = FALSE,
 		   callback.delete = function(data, row) { },
 		   callback.update = function(data, olddata, row) { },
 		   callback.insert = function(data, row) { },
@@ -563,6 +569,11 @@ dtedit <- function(input, output, session, thedataframe,
 		)
 	}
 
+	##### Upload functions #######################################################
+	
+			
+			
+			
 	##### React to changes in 'thedataframe' if that variable is a reactive ######
 
 	if (is.reactive(thedataframe)) {
@@ -586,6 +597,8 @@ dtedit <- function(input, output, session, thedataframe,
 			if(show.update) { shiny::actionButton(ns(paste0(name, '_edit')), label.edit, icon = icon.edit) },
 			if(show.delete) { shiny::actionButton(ns(paste0(name, '_remove')), label.delete, icon = icon.delete) },
 			if(show.copy) { shiny::actionButton(ns(paste0(name, '_copy')), label.copy, icon = icon.copy) },
+			if(show.download) { shiny::actionButton(ns(paste0(name, '_download')), label.download, icon = icon.download) },
+			if(show.upload) { shiny::actionButton(ns(paste0(name, '_upload')), label.upload, icon = icon.upload) },
 			shiny::br(), shiny::br(), DT::dataTableOutput(ns(DataTableName))
 		)
 	})
